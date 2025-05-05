@@ -68,6 +68,6 @@ while True:
     cv2.imshow("Frame", frame)
     cv2.waitKey(1)
 
-
+#KILL THE CAMERA
 cap.release()
 cv2.destroyAllWindows()
