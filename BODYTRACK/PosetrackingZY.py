@@ -33,6 +33,7 @@ if not cap.isOpened():
 
 
 #Main loop
+def ZtoXTrack(cap):
 while True:
 
     #capture frame by frame from the camera
@@ -48,29 +49,24 @@ while True:
 
     # Process the RGB frame with MediaPipe Hands
     results = pose.process(rgb_frame)
-    Handresult = hands.process(rgb_frame)
+    #Handresult = hands.process(rgb_frame)
 
     if results.pose_landmarks:
         pose_landmarks = results.pose_landmarks
         # Draw landmarks
         mp_drawing.draw_landmarks(frame, pose_landmarks,mp_pose.POSE_CONNECTIONS)
     
-    camB_landmarks = [(lm.x * w, lm.y * h) for lm in results.pose_landmarks.landmark]
-#   if Handresult.multi_hand_landmarks:
-#        for Hand_landmarks in Handresult.multi_hand_landmarks:
-#            #Draw Landmarks
-#            mp_drawing.draw_landmarks(frame, Hand_landmarks, mp_hands.HAND_CONNECTIONS)
+    right_index_x = pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_INDEX].x
+    right_index_y = pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_INDEX].y
+    right_index_visibility = pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_INDEX].visibility
+    Left_index_x = pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_INDEX].x
+    Left_index_y = pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_INDEX].y
+    Left_index_visibility = pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_INDEX].visibility
+
+    IndexValues = [right_index_x, right_index_y, right_index_visibility, left_index_x, left_index_y, left_index_visibility]
 
 
-#    # Draw the hand annotations on the frame.
-#    if results.pose_landmarks:
-#        pose_landmarks = results.pose_landmarks
-#            #Draw landmarks
-#        mp_drawing.draw_landmarks(frame, pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
-#    # Display the resulting frame
-#    cv2.imshow("Frame", frame)
-#    cv2.waitKey(1)
 
 #KILL THE CAMERA
 cap.release()
