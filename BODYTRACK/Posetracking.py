@@ -1,6 +1,6 @@
 import cv2
 import mediapipe as mp
-
+from PosetrackingZY import IndexValues
 
 # Initialize Mediapipe Hand solution
 mp_pose = mp.solutions.pose
