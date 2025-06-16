@@ -1,10 +1,14 @@
 import cv2
 import mediapipe as mp
 from PosetrackingZY import ZtoXTrack
+from mediapipe.framework.formats import landmark_pb2 
 
 # Initialize Mediapipe Hand solution
 mp_pose = mp.solutions.pose
 mp_hands = mp.solutions.hands
+
+# I for loop
+i = 0
 
 #Does tracky stuff
 pose = mp_pose.Pose(static_image_mode=False,
@@ -31,7 +35,10 @@ if not cap.isOpened():
 
 #Main loop
 while True:
-
+    TrueX = []
+    TrueZ = []
+    TrueY = []
+    TrueV = []
     #capture frame by frame from the camera
     success, frame = cap.read()
     if not success:
@@ -47,22 +54,42 @@ while True:
     results = pose.process(rgb_frame)
     Handresult = hands.process(rgb_frame)
 
-    if results.pose_landmarks:
-        pose_landmarks = results.pose_landmarks
-        # Draw landmarks
-        mp_drawing.draw_landmarks(frame, pose_landmarks,mp_pose.POSE_CONNECTIONS)
+    ONodeValuesX = []
+    ONodeValuesY = []
+    ONodeValuesV = []
+
+    NodeValuesX, NodeValuesY, NodeValuesV = ZtoXTrack()
+    for i in range(33):  # MediaPipe has 33 pose landmarks
+        ONodeValuesX.append(pose_landmarks.landmark[i].x)
+        ONodeValuesY.append(pose_landmarks.landmark[i].y)
+        ONodeValuesV.append(pose_landmarks.landmark[i].visibility)
+        i += 1
+    for o in range(33):
+        TrueY.append((NodeValuesY[o] + ONodeValuesY[o])/2)
+        TrueX.append(ONodeValuesX[o])
+        TrueZ.append(NodeValuesX[o])
+        TrueV.append((ONodeValuesV[o]+ NodeValuesV[o])/2)
+        true_landmarks = []
+    for i in range(33):
+        landmark = landmark_pb2.NormalizedLandmark(
+            x=TrueX[i],
+            y=TrueY[i],
+            z=TrueZ[i] if i < len(TrueZ) else 0,
+            visibility=TrueV[i]
+        )
+        true_landmarks.append(landmark)
+    
+    true_landmark_list = landmark_pb2.NormalizedLandmarkList(landmark=true_landmarks)
+    mp_drawing.draw_landmarks(
+        frame,
+        true_landmark_list,
+        mp_pose.POSE_CONNECTIONS
+)
     
     if Handresult.multi_hand_landmarks:
         for Hand_landmarks in Handresult.multi_hand_landmarks:
             #Draw Landmarks
             mp_drawing.draw_landmarks(frame, Hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
-
-    # Draw the hand annotations on the frame.
-    if results.pose_landmarks:
-        pose_landmarks = results.pose_landmarks
-            #Draw landmarks
-        mp_drawing.draw_landmarks(frame, pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
     # Display the resulting frame
     cv2.imshow("Frame", frame)
